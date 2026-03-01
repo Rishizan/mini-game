@@ -1,0 +1,35 @@
+name: CI-CD-Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Tests
+        run: |
+          chmod +x test.sh
+          ./test.sh
+
+      - name: Build Docker Image
+        run: |
+          docker build -t mini-game .
+
+      - name: Login to ACR
+        run: |
+          echo ${{ secrets.ACR_PASSWORD }} | docker login rishiacr2025.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      - name: Tag Image
+        run: |
+          docker tag mini-game rishiacr2025.azurecr.io/mini-game:v1
+
+      - name: Push Image
+        run: |
+          docker push rishiacr2025.azurecr.io/mini-game:v1
